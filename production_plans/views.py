@@ -3,8 +3,10 @@ from django.http import JsonResponse
 from .models import ProductionPlan
 from products.models import Product
 from .forms import ProductionPlanForm
+from django.contrib.auth.decorators import login_required
 
 
+@login_required
 def plan_list(request):
     """
     Отображение списка планов производства.

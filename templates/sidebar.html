@@ -6,6 +6,9 @@
                     <i class="fas fa-home"></i> Главная
                 </a>
             </li>
+
+            {% if user.is_authenticated %}
+
             <li class="nav-item">
                 <a class="nav-link {% if request.resolver_match.url_name == 'product_list' %}active{% endif %}" href="{% url 'product_list' %}">
                     <i class="fas fa-cubes"></i> Продукция
@@ -26,6 +29,7 @@
                     <i class="fas fa-clipboard-list"></i> Поставщики
                 </a>
             </li>
+            {% endif %}
         </ul>
     </div>
 </nav>

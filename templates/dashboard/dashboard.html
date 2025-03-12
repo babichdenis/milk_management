@@ -122,7 +122,106 @@
         </div>
     </div>
 </div>
+<!-- Модальное окно для входа -->
+<div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="loginModalLabel">Вход</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="loginForm" method="post" action="{% url 'login' %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Имя пользователя</label>
+                        <input type="text" class="form-control" id="username" name="username" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Пароль</label>
+                        <input type="password" class="form-control" id="password" name="password" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Войти</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 
+<!-- Модальное окно для регистрации -->
+<div class="modal fade" id="registerModal" tabindex="-1" aria-labelledby="registerModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="registerModalLabel">Регистрация</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="registerForm" method="post" action="{% url 'register' %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="id_username" class="form-label">Имя пользователя</label>
+                        <input type="text" class="form-control" name="username" required id="id_username">
+                        <div id="usernameError" class="text-danger small"></div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="id_password1" class="form-label">Пароль</label>
+                        <input type="password" class="form-control" name="password1" required id="id_password1">
+                    </div>
+                    <div class="mb-3">
+                        <label for="id_password2" class="form-label">Подтверждение пароля</label>
+                        <input type="password" class="form-control" name="password2" required id="id_password2">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Зарегистрироваться</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function() {
+        // Обработка формы входа
+        $('#loginForm').on('submit', function(e) {
+            e.preventDefault();
+            $.ajax({
+                type: 'POST',
+                url: '{% url "login" %}',
+                data: $(this).serialize(),
+                success: function(response) {
+                    if (response.success) {
+                        location.reload(); // Перезагрузить страницу после успешного входа
+                    } else {
+                        alert(response.error); // Показать ошибку
+                    }
+                },
+                error: function() {
+                    alert('Ошибка при отправке формы.');
+                }
+            });
+        });
+
+        // Обработка формы регистрации
+        $('#registerForm').on('submit', function(e) {
+            e.preventDefault();
+            $.ajax({
+                type: 'POST',
+                url: '{% url "register" %}',
+                data: $(this).serialize(),
+                success: function(response) {
+                    if (response.success) {
+                        location.reload(); // Перезагрузить страницу после успешной регистрации
+                    } else {
+                        alert(response.error); // Показать ошибку
+                    }
+                },
+                error: function() {
+                    alert('Ошибка при отправке формы.');
+                }
+            });
+        });
+    });
+</script>
 <!-- Charts -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
@@ -154,5 +253,46 @@
             }]
         }
     });
+    // Обработка формы входа
+$('#loginForm').on('submit', function(e) {
+    e.preventDefault();
+    var form = $(this);
+    $.ajax({
+        type: form.attr('method'),
+        url: '{% url "login" %}',
+        data: form.serialize(),
+        success: function(response) {
+            if (response.success) {
+                location.reload();
+            } else {
+                alert('Неправильные учетные данные');
+            }
+        },
+        error: function(xhr) {
+            alert('Ошибка при отправке формы');
+        }
+    });
+});
+
+// Обработка формы регистрации
+$('#registerForm').on('submit', function(e) {
+    e.preventDefault();
+    let form = $(this);
+    $.ajax({
+        url: "{% url 'register' %}",
+        method: "POST",
+        data: form.serialize(),
+        success: function(response) {
+            if(response.success) {
+                $('#registerModal').modal('hide');
+                form[0].reset();
+                location.reload();
+            } else {
+                // Показываем ошибку под полем username
+                $('#usernameError').text(response.error);
+            }
+        }
+    });
+});
 </script>
 {% endblock %}

@@ -1,4 +1,5 @@
 # dashboard/views.py
+from django.http import JsonResponse
 from django.shortcuts import render
 from suppliers.models import Supplier
 from raw_materials.models import RawMaterial
@@ -6,6 +7,11 @@ from products.models import Product
 from production_plans.models import ProductionPlan
 from django.db.models import Sum, Count
 from django.utils import timezone
+from django.shortcuts import redirect
+from django.contrib.auth import logout
+from django.contrib.auth import authenticate, login
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.models import User
 
 
 def dashboard_view(request):
@@ -53,3 +59,41 @@ def dashboard_view(request):
     }
 
     return render(request, 'dashboard/dashboard.html', context)
+
+
+def login_view(request):
+    if request.method == 'POST':
+        username = request.POST['username']
+        password = request.POST['password']
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            login(request, user)
+            return JsonResponse({'success': True})
+        else:
+            return JsonResponse({'success': False, 'error': 'Неверные учетные данные'})
+    return render(request, 'dashboard/login.html')
+
+
+def register_view(request):
+    if request.method == 'POST':
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)  # Вход пользователя сразу после регистрации
+            return redirect('dashboard')  # Перенаправление на главную страницу
+        else:
+            # Проверка на существующее имя пользователя
+            username = request.POST.get('username', '')
+            if User.objects.filter(username=username).exists():
+                error = 'Это имя пользователя уже занято'
+            else:
+                error = form.errors.as_json()
+            return render(request, 'dashboard/register.html', {'form': form, 'error': error})
+    else:
+        form = UserCreationForm()
+    return render(request, 'dashboard/register.html', {'form': form})
+
+
+def logout_view(request):
+    logout(request)
+    return redirect('dashboard')
