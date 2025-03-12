@@ -17,17 +17,14 @@
 1. **Клонирование репозитория:**
 git clone https://github.com/your-username/milk-management.git
 
-text
 
 2. **Переход в директорию проекта:**
 cd milk-management
 
-text
 
 3. **Создание виртуальной среды:**
 python -m venv venv
 
-text
 
 4. **Активация виртуальной среды:**
 На Windows
@@ -36,30 +33,25 @@ venv\Scripts\activate
 На macOS/Linux
 source venv/bin/activate
 
-text
 
 5. **Установка зависимостей:**
 pip install -r requirements.txt
 
-text
 
 6. **Применение миграций:**
 python manage.py makemigrations
 python manage.py migrate
 
-text
 
 7. **Создание суперпользователя:**
 python manage.py createsuperuser
 
-text
 
 ## Запуск проекта
 
 1. **Запуск сервера:**
 python manage.py runserver
 
-text
 
 2. **Открытие в браузере:**
 Перейдите по адресу [http://127.0.0.1:8000](http://127.0.0.1:8000) для доступа к приложению.
