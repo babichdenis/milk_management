@@ -1,0 +1,296 @@
+<!-- templates/raw_materials/raw_material_list.html -->
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1>Список сырья</h1>
+
+    <!-- Кнопка для открытия модального окна добавления -->
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addRawMaterialModal">
+        Добавить сырье
+    </button>
+
+    <!-- Таблица сырья -->
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Поставщик</th>
+                <th>Количество</th>
+                <th>Жирность</th>
+                <th>Кислотность</th>
+                <th>Дата поступления</th>
+                <th>Срок годности</th>
+                <th>Номер накладной</th>
+                <th>Действия</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for raw_material in raw_materials %}
+            <tr>
+                <td>{{ raw_material.supplier.name }}</td>
+                <td>{{ raw_material.quantity }}</td>
+                <td>{{ raw_material.fat_content }}</td>
+                <td>{{ raw_material.acidity }}</td>
+                <td>{{ raw_material.received_date }}</td>
+                <td>{{ raw_material.expiration_date }}</td>
+                <td>{{ raw_material.document_number }}</td>
+                <td>
+                    <!-- Кнопка для открытия модального окна редактирования -->
+                    <button type="button" class="btn btn-warning btn-sm"
+                            data-bs-toggle="modal"
+                            data-bs-target="#editRawMaterialModal"
+                            data-raw-material-id="{{ raw_material.id }}"
+                            data-raw-material-supplier="{{ raw_material.supplier.id }}"
+                            data-raw-material-quantity="{{ raw_material.quantity }}"
+                            data-raw-material-fat-content="{{ raw_material.fat_content }}"
+                            data-raw-material-acidity="{{ raw_material.acidity }}"
+                            data-raw-material-received-date="{{ raw_material.received_date }}"
+                            data-raw-material-expiration-date="{{ raw_material.expiration_date }}"
+                            data-raw-material-document-number="{{ raw_material.document_number }}">
+                        Редактировать
+                    </button>
+                    <!-- Кнопка для удаления -->
+                    <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteRawMaterialModal{{ raw_material.id }}">
+                        Удалить
+                    </button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Модальное окно добавления -->
+    <div class="modal fade" id="addRawMaterialModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Добавить сырье</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form method="post" action="{% url 'raw_materials:create' %}" id="addRawMaterialForm" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="supplier" class="form-label">Поставщик</label>
+                            <select class="form-control" id="supplier" name="supplier">
+                                {% for supplier in suppliers %}
+                                <option value="{{ supplier.id }}">{{ supplier.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="quantity" class="form-label">Количество</label>
+                            <input type="number" class="form-control" id="quantity" name="quantity">
+                        </div>
+                        <div class="mb-3">
+                            <label for="fat_content" class="form-label">Жирность</label>
+                            <input type="number" class="form-control" id="fat_content" name="fat_content">
+                        </div>
+                        <div class="mb-3">
+                            <label for="acidity" class="form-label">Кислотность</label>
+                            <input type="number" class="form-control" id="acidity" name="acidity">
+                        </div>
+                        <div class="mb-3">
+                            <label for="received_date" class="form-label">Дата поступления</label>
+                            <input type="date" class="form-control" id="received_date" name="received_date">
+                        </div>
+                        <div class="mb-3">
+                            <label for="expiration_date" class="form-label">Срок годности</label>
+                            <input type="date" class="form-control" id="expiration_date" name="expiration_date">
+                        </div>
+                        <div class="mb-3">
+                            <label for="document_number" class="form-label">Номер накладной</label>
+                            <input type="text" class="form-control" id="document_number" name="document_number">
+                        </div>
+                        <div class="mb-3">
+                            <label for="document_file" class="form-label">Файл накладной</label>
+                            <input type="file" class="form-control" id="document_file" name="document_file">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Добавить</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно редактирования -->
+    <div class="modal fade" id="editRawMaterialModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Редактировать сырье</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form method="post" class="edit-raw-material-form" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="supplier" class="form-label">Поставщик</label>
+                            <select class="form-control" id="supplier" name="supplier">
+                                {% for supplier in suppliers %}
+                                <option value="{{ supplier.id }}">{{ supplier.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="quantity" class="form-label">Количество</label>
+                            <input type="number" class="form-control" id="quantity" name="quantity">
+                        </div>
+                        <div class="mb-3">
+                            <label for="fat_content" class="form-label">Жирность</label>
+                            <input type="number" class="form-control" id="fat_content" name="fat_content">
+                        </div>
+                        <div class="mb-3">
+                            <label for="acidity" class="form-label">Кислотность</label>
+                            <input type="number" class="form-control" id="acidity" name="acidity">
+                        </div>
+                        <div class="mb-3">
+                            <label for="received_date" class="form-label">Дата поступления</label>
+                            <input type="date" class="form-control" id="received_date" name="received_date">
+                        </div>
+                        <div class="mb-3">
+                            <label for="expiration_date" class="form-label">Срок годности</label>
+                            <input type="date" class="form-control" id="expiration_date" name="expiration_date">
+                        </div>
+                        <div class="mb-3">
+                            <label for="document_number" class="form-label">Номер накладной</label>
+                            <input type="text" class="form-control" id="document_number" name="document_number">
+                        </div>
+                        <div class="mb-3">
+                            <label for="document_file" class="form-label">Файл накладной</label>
+                            <input type="file" class="form-control" id="document_file" name="document_file">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Сохранить</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript для AJAX -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function() {
+        // Обработка открытия модального окна редактирования
+        $('#editRawMaterialModal').on('show.bs.modal', function (event) {
+            var button = $(event.relatedTarget); // Кнопка, которая вызвала модальное окно
+            var rawMaterialId = button.data('raw-material-id'); // Извлечение ID сырья
+            var modal = $(this);
+
+            // Заполнение полей модального окна данными сырья
+            modal.find('.modal-body #supplier').val(button.data('raw-material-supplier'));
+            modal.find('.modal-body #quantity').val(button.data('raw-material-quantity'));
+            modal.find('.modal-body #fat_content').val(button.data('raw-material-fat-content'));
+            modal.find('.modal-body #acidity').val(button.data('raw-material-acidity'));
+            modal.find('.modal-body #received_date').val(button.data('raw-material-received-date'));
+            modal.find('.modal-body #expiration_date').val(button.data('raw-material-expiration-date'));
+            modal.find('.modal-body #document_number').val(button.data('raw-material-document-number'));
+
+            // Установка action формы с правильным URL для обновления
+            modal.find('.edit-raw-material-form').attr('action', '/raw_materials/update/' + rawMaterialId + '/');
+        });
+
+        // Обработка формы добавления
+        $('#addRawMaterialForm').on('submit', function(e) {
+            e.preventDefault();
+            var form = $(this);
+            var formData = new FormData(form[0]); // Для отправки файлов
+            $.ajax({
+                type: form.attr('method'),
+                url: form.attr('action'),
+                data: formData,
+                contentType: false,
+                processData: false,
+                success: function(response) {
+                    if (response.success) {
+                        // Добавляем новую строку в таблицу
+                        var newRawMaterial = response.raw_material;
+                        var newRow = '<tr>' +
+                            '<td>' + newRawMaterial.supplier_name + '</td>' +
+                            '<td>' + newRawMaterial.quantity + '</td>' +
+                            '<td>' + newRawMaterial.fat_content + '</td>' +
+                            '<td>' + newRawMaterial.acidity + '</td>' +
+                            '<td>' + newRawMaterial.received_date + '</td>' +
+                            '<td>' + newRawMaterial.expiration_date + '</td>' +
+                            '<td>' + newRawMaterial.document_number + '</td>' +
+                            '<td>' +
+                            '<button type="button" class="btn btn-warning btn-sm" ' +
+                            'data-bs-toggle="modal" data-bs-target="#editRawMaterialModal" ' +
+                            'data-raw-material-id="' + newRawMaterial.id + '" ' +
+                            'data-raw-material-supplier="' + newRawMaterial.supplier + '" ' +
+                            'data-raw-material-quantity="' + newRawMaterial.quantity + '" ' +
+                            'data-raw-material-fat-content="' + newRawMaterial.fat_content + '" ' +
+                            'data-raw-material-acidity="' + newRawMaterial.acidity + '" ' +
+                            'data-raw-material-received-date="' + newRawMaterial.received_date + '" ' +
+                            'data-raw-material-expiration-date="' + newRawMaterial.expiration_date + '" ' +
+                            'data-raw-material-document-number="' + newRawMaterial.document_number + '">' +
+                            'Редактировать</button>' +
+                            '<button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteRawMaterialModal' + newRawMaterial.id + '">Удалить</button>' +
+                            '</td>' +
+                            '</tr>';
+                        $('table tbody').append(newRow);
+                        
+                        // Закрываем модальное окно
+                        $('#addRawMaterialModal').modal('hide');
+
+                        // Очищаем форму
+                        form[0].reset();
+                        
+                    } else {
+                        alert('Ошибка при добавлении сырья.');
+                    }
+                },
+                error: function() {
+                    alert('Ошибка при отправке формы.');
+                }
+            });
+        });
+
+        // Обработка формы редактирования
+        $('.edit-raw-material-form').on('submit', function(e) {
+            e.preventDefault();
+            var form = $(this);
+            var formData = new FormData(form[0]); // Для отправки файлов
+            $.ajax({
+                type: form.attr('method'),
+                url: form.attr('action'),
+                data: formData,
+                contentType: false,
+                processData: false,
+                success: function(response) {
+                    if (response.success) {
+                        location.reload();
+                    } else {
+                        alert('Ошибка при редактировании сырья.');
+                    }
+                },
+                error: function() {
+                    alert('Ошибка при отправке формы.');
+                }
+            });
+        });
+
+        // Обработка формы удаления
+        $('.delete-raw-material-form').on('submit', function(e) {
+            e.preventDefault();
+            var form = $(this);
+            $.ajax({
+                type: form.attr('method'),
+                url: form.attr('action'),
+                data: form.serialize(),
+                success: function(response) {
+                    if (response.success) {
+                        location.reload();
+                    } else {
+                        alert('Ошибка при удалении сырья.');
+                    }
+                },
+                error: function() {
+                    alert('Ошибка при отправке формы.');
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

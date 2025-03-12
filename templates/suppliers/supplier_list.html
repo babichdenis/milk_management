@@ -1,0 +1,239 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1>Список поставщиков</h1>
+
+    <!-- Кнопка для открытия модального окна добавления -->
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addSupplierModal">
+        Добавить поставщика
+    </button>
+
+    <!-- Таблица поставщиков -->
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Название</th>
+                <th>Контактное лицо</th>
+                <th>Телефон</th>
+                <th>Email</th>
+                <th>Действия</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for supplier in suppliers %}
+            <tr>
+                <td>{{ supplier.name }}</td>
+                <td>{{ supplier.contact_person }}</td>
+                <td>{{ supplier.phone }}</td>
+                <td>{{ supplier.email }}</td>
+                <td>
+                    <!-- Кнопка для открытия модального окна редактирования -->
+                    <button type="button" class="btn btn-warning btn-sm"
+                            data-bs-toggle="modal"
+                            data-bs-target="#editSupplierModal"
+                            data-supplier-id="{{ supplier.id }}"
+                            data-supplier-name="{{ supplier.name }}"
+                            data-supplier-contact-person="{{ supplier.contact_person }}"
+                            data-supplier-phone="{{ supplier.phone }}"
+                            data-supplier-email="{{ supplier.email }}">
+                        Редактировать
+                    </button>
+                    <!-- Кнопка для удаления -->
+                    <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteSupplierModal{{ supplier.id }}">
+                        Удалить
+                    </button>
+                </td>
+            </tr>
+
+            <!-- Модальное окно удаления -->
+            <div class="modal fade" id="deleteSupplierModal{{ supplier.id }}" tabindex="-1">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Удалить поставщика</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p>Вы уверены, что хотите удалить "{{ supplier.name }}"?</p>
+                            <form method="post" action="{% url 'suppliers:delete' supplier.id %}" class="delete-supplier-form">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-danger">Удалить</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Модальное окно добавления -->
+    <div class="modal fade" id="addSupplierModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Добавить поставщика</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form method="post" action="{% url 'suppliers:create' %}" id="addSupplierForm">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Название</label>
+                            <input type="text" class="form-control" id="name" name="name">
+                        </div>
+                        <div class="mb-3">
+                            <label for="contact_person" class="form-label">Контактное лицо</label>
+                            <input type="text" class="form-control" id="contact_person" name="contact_person">
+                        </div>
+                        <div class="mb-3">
+                            <label for="phone" class="form-label">Телефон</label>
+                            <input type="text" class="form-control" id="phone" name="phone">
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email" name="email">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Добавить</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно редактирования -->
+    <div class="modal fade" id="editSupplierModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Редактировать поставщика</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form method="post" class="edit-supplier-form">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Название</label>
+                            <input type="text" class="form-control" id="name" name="name">
+                        </div>
+                        <div class="mb-3">
+                            <label for="contact_person" class="form-label">Контактное лицо</label>
+                            <input type="text" class="form-control" id="contact_person" name="contact_person">
+                        </div>
+                        <div class="mb-3">
+                            <label for="phone" class="form-label">Телефон</label>
+                            <input type="text" class="form-control" id="phone" name="phone">
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email" name="email">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Сохранить</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript для AJAX -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function() {
+        // Обработка открытия модального окна редактирования
+        $('#editSupplierModal').on('show.bs.modal', function (event) {
+            var button = $(event.relatedTarget); // Кнопка, которая вызвала модальное окно
+            var supplierId = button.data('supplier-id'); // Извлечение ID поставщика
+            var modal = $(this);
+
+            // Заполнение полей модального окна данными поставщика
+            modal.find('.modal-body #name').val(button.data('supplier-name'));
+            modal.find('.modal-body #contact_person').val(button.data('supplier-contact-person'));
+            modal.find('.modal-body #phone').val(button.data('supplier-phone'));
+            modal.find('.modal-body #email').val(button.data('supplier-email'));
+
+            // Установка action формы с правильным URL для обновления
+            modal.find('.edit-supplier-form').attr('action', '/suppliers/update/' + supplierId + '/');
+        });
+
+        // Обработка формы добавления
+        $('#addSupplierForm').on('submit', function(e) {
+            e.preventDefault();
+            var form = $(this);
+            $.ajax({
+                type: form.attr('method'),
+                url: form.attr('action'),
+                data: form.serialize(),
+                success: function(response) {
+                    if (response.success) {
+                        location.reload();
+                    } else {
+                        // Вывод ошибок, если они есть
+                        if (response.errors) {
+                            var errorMessages = JSON.stringify(response.errors);
+                            alert('Ошибка при добавлении поставщика: ' + errorMessages);
+                        } else {
+                            alert('Произошла ошибка при добавлении поставщика.');
+                        }
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error(xhr.responseText);  // Вывод полного ответа в консоль
+                    alert('Ошибка при отправке формы: ' + error);
+                }
+            });
+        });
+
+        // Обработка формы редактирования
+        $('.edit-supplier-form').on('submit', function(e) {
+            e.preventDefault();
+            var form = $(this);
+            $.ajax({
+                type: form.attr('method'),
+                url: form.attr('action'),
+                data: form.serialize(),
+                success: function(response) {
+                    if (response.success) {
+                        location.reload();
+                    } else {
+                         // Вывод ошибок, если они есть
+                        if (response.errors) {
+                            var errorMessages = JSON.stringify(response.errors);
+                            alert('Ошибка при редактировании поставщика: ' + errorMessages);
+                        } else {
+                            alert('Произошла ошибка при редактировании поставщика.');
+                        }
+                    }
+                },
+                error: function(xhr, status, error) {
+                     console.error(xhr.responseText);  // Вывод полного ответа в консоль
+                    alert('Ошибка при отправке формы: ' + error);
+                }
+            });
+        });
+
+        // Обработка формы удаления
+        $('.delete-supplier-form').on('submit', function(e) {
+            e.preventDefault();
+            var form = $(this);
+            $.ajax({
+                type: form.attr('method'),
+                url: form.attr('action'),
+                data: form.serialize(),
+                success: function(response) {
+                    if (response.success) {
+                        location.reload();
+                    } else {
+                        alert('Ошибка при удалении поставщика.');
+                    }
+                },
+                 error: function(xhr, status, error) {
+                     console.error(xhr.responseText);  // Вывод полного ответа в консоль
+                    alert('Ошибка при отправке формы: ' + error);
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

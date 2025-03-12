@@ -1,0 +1,212 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>Список планов производства</h1>
+
+<!-- Кнопка для открытия модального окна добавления -->
+<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addPlanModal">
+    Добавить план
+</button>
+
+<!-- Таблица планов -->
+<table class="table">
+    <thead>
+        <tr>
+            <th>Продукция</th>
+            <th>Количество</th>
+            <th>Планируемая дата</th>
+            <th>Статус</th>
+            <th>Действия</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for plan in plans %}
+        <tr>
+            <td>{{ plan.product.name }}</td>
+            <td>{{ plan.quantity }}</td>
+            <td>{{ plan.planned_date }}</td>
+            <td>{{ plan.get_status_display }}</td>
+            <td>
+                <!-- Кнопка для открытия модального окна редактирования -->
+                <button type="button" class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#editPlanModal{{ plan.id }}">
+                    Редактировать
+                </button>
+                <!-- Кнопка для удаления -->
+                <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deletePlanModal{{ plan.id }}">
+                    Удалить
+                </button>
+            </td>
+        </tr>
+
+        <!-- Модальное окно редактирования -->
+        <div class="modal fade" id="editPlanModal{{ plan.id }}" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Редактировать план</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form method="post" action="{% url 'edit_plan' plan.id %}" class="edit-plan-form">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <label for="product{{ plan.id }}" class="form-label">Продукция</label>
+                                <select class="form-control" id="product{{ plan.id }}" name="product">
+                                    {% for product in products %}
+                                    <option value="{{ product.id }}" {% if product.id == plan.product.id %}selected{% endif %}>{{ product.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="quantity{{ plan.id }}" class="form-label">Количество</label>
+                                <input type="number" class="form-control" id="quantity{{ plan.id }}" name="quantity" value="{{ plan.quantity }}">
+                            </div>
+                            <div class="mb-3">
+                                <label for="planned_date{{ plan.id }}" class="form-label">Планируемая дата</label>
+                                <input type="date" class="form-control" id="planned_date{{ plan.id }}" name="planned_date" value="{{ plan.planned_date|date:'Y-m-d' }}">
+                            </div>
+                            <div class="mb-3">
+                                <label for="status{{ plan.id }}" class="form-label">Статус</label>
+                                <select class="form-control" id="status{{ plan.id }}" name="status">
+                                    <option value="planned" {% if plan.status == 'planned' %}selected{% endif %}>Запланировано</option>
+                                    <option value="completed" {% if plan.status == 'completed' %}selected{% endif %}>Завершено</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Сохранить</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Модальное окно удаления -->
+        <div class="modal fade" id="deletePlanModal{{ plan.id }}" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Удалить план</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Вы уверены, что хотите удалить план для "{{ plan.product.name }}"?</p>
+                        <form method="post" action="{% url 'delete_plan' plan.id %}" class="delete-plan-form">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger">Удалить</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </tbody>
+</table>
+
+<!-- Модальное окно добавления -->
+<div class="modal fade" id="addPlanModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Добавить план</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post" action="{% url 'add_plan' %}" id="addPlanForm">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="product" class="form-label">Продукция</label>
+                        <select class="form-control" id="product" name="product">
+                            {% for product in products %}
+                            <option value="{{ product.id }}">{{ product.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="quantity" class="form-label">Количество</label>
+                        <input type="number" class="form-control" id="quantity" name="quantity">
+                    </div>
+                    <div class="mb-3">
+                        <label for="planned_date" class="form-label">Планируемая дата</label>
+                        <input type="date" class="form-control" id="planned_date" name="planned_date">
+                    </div>
+                    <div class="mb-3">
+                        <label for="status" class="form-label">Статус</label>
+                        <select class="form-control" id="status" name="status">
+                            <option value="planned">Запланировано</option>
+                            <option value="completed">Завершено</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Добавить</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript для AJAX -->
+<script>
+    $(document).ready(function() {
+        // Обработка формы добавления
+        $('#addPlanForm').on('submit', function(e) {
+            e.preventDefault();
+            var form = $(this);
+            $.ajax({
+                type: form.attr('method'),
+                url: form.attr('action'),
+                data: form.serialize(),
+                success: function(response) {
+                    if (response.success) {
+                        location.reload();
+                    } else {
+                        alert('Ошибка при добавлении плана.');
+                    }
+                },
+                error: function() {
+                    alert('Ошибка при отправке формы.');
+                }
+            });
+        });
+
+        // Обработка формы редактирования
+        $('.edit-plan-form').on('submit', function(e) {
+            e.preventDefault();
+            var form = $(this);
+            $.ajax({
+                type: form.attr('method'),
+                url: form.attr('action'),
+                data: form.serialize(),
+                success: function(response) {
+                    if (response.success) {
+                        location.reload();
+                    } else {
+                        alert('Ошибка при редактировании плана.');
+                    }
+                },
+                error: function() {
+                    alert('Ошибка при отправке формы.');
+                }
+            });
+        });
+
+        // Обработка формы удаления
+        $('.delete-plan-form').on('submit', function(e) {
+            e.preventDefault();
+            var form = $(this);
+            $.ajax({
+                type: form.attr('method'),
+                url: form.attr('action'),
+                data: form.serialize(),
+                success: function(response) {
+                    if (response.success) {
+                        location.reload();
+                    } else {
+                        alert('Ошибка при удалении плана.');
+                    }
+                },
+                error: function() {
+                    alert('Ошибка при отправке формы.');
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

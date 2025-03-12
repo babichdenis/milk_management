@@ -1,0 +1,31 @@
+<nav class="col-md-3 col-lg-2 d-md-block sidebar">
+    <div class="position-sticky">
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" href="{% url 'dashboard' %}">
+                    <i class="fas fa-home"></i> Главная
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if request.resolver_match.url_name == 'product_list' %}active{% endif %}" href="{% url 'product_list' %}">
+                    <i class="fas fa-cubes"></i> Продукция
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if request.resolver_match.url_name == 'raw_materials:raw_material_list' %}active{% endif %}" href="{% url 'raw_materials:raw_material_list' %}">
+                    <i class="fas fa-warehouse"></i> Сырье
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if request.resolver_match.url_name == 'plan_list' %}active{% endif %}" href="{% url 'plan_list' %}">
+                    <i class="fas fa-clipboard-list"></i> Планы производства
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if request.resolver_match.url_name == 'suppliers:supplier_list' %}active{% endif %}" href="{% url 'suppliers:supplier_list' %}">
+                    <i class="fas fa-clipboard-list"></i> Поставщики
+                </a>
+            </li>
+        </ul>
+    </div>
+</nav>

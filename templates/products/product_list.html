@@ -1,0 +1,235 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div class="container mt-5">
+        <h1>Список продукции</h1>
+
+        <!-- Кнопка для открытия модального окна добавления -->
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addProductModal">
+            Добавить продукцию
+        </button>
+
+        <!-- Таблица продукции -->
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Название</th>
+                    <th>Объем</th>
+                    <th>Срок годности</th>
+                    <th>Себестоимость</th>
+                    <th>Категория</th>
+                    <th>Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for product in products %}
+                <tr>
+                    <td>{{ product.name }}</td>
+                    <td>{{ product.volume }}</td>
+                    <td>{{ product.expiration_date }}</td>
+                    <td>{{ product.production_cost }}</td>
+                    <td>{{ product.category }}</td>
+                    <td>
+                        <!-- Кнопка для открытия модального окна редактирования -->
+                        <button type="button" class="btn btn-warning btn-sm"
+                                data-bs-toggle="modal"
+                                data-bs-target="#editProductModal"
+                                data-product-id="{{ product.id }}"
+                                data-product-name="{{ product.name }}"
+                                data-product-volume="{{ product.volume }}"
+                                data-product-expiration-date="{{ product.expiration_date|date:'Y-m-d' }}"
+                                data-product-production-cost="{{ product.production_cost }}"
+                                data-product-category="{{ product.category }}">
+                            Редактировать
+                        </button>
+                        <!-- Кнопка для удаления -->
+                        <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteProductModal{{ product.id }}">
+                            Удалить
+                        </button>
+                    </td>
+                </tr>
+
+                <!-- Модальное окно удаления -->
+                <div class="modal fade" id="deleteProductModal{{ product.id }}" tabindex="-1">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Удалить продукцию</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <p>Вы уверены, что хотите удалить "{{ product.name }}"?</p>
+                                <form method="post" action="{% url 'product_delete' product.id %}" class="delete-product-form">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-danger">Удалить</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- Модальное окно добавления -->
+        <div class="modal fade" id="addProductModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Добавить продукцию</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form method="post" action="{% url 'product_create' %}" id="addProductForm">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <label for="name" class="form-label">Название</label>
+                                <input type="text" class="form-control" id="name" name="name">
+                            </div>
+                            <div class="mb-3">
+                                <label for="volume" class="form-label">Объем</label>
+                                <input type="number" step="0.01" class="form-control" id="volume" name="volume">
+                            </div>
+                            <div class="mb-3">
+                                <label for="expiration_date" class="form-label">Срок годности</label>
+                                <input type="date" class="form-control" id="expiration_date" name="expiration_date">
+                            </div>
+                            <div class="mb-3">
+                                <label for="production_cost" class="form-label">Себестоимость</label>
+                                <input type="number" step="0.01" class="form-control" id="production_cost" name="production_cost">
+                            </div>
+                            <div class="mb-3">
+                                <label for="category" class="form-label">Категория</label>
+                                <input type="text" class="form-control" id="category" name="category">
+                            </div>
+                            <button type="submit" class="btn btn-primary">Добавить</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Модальное окно редактирования -->
+        <div class="modal fade" id="editProductModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Редактировать продукцию</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form method="post" class="edit-product-form">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <label for="name" class="form-label">Название</label>
+                                <input type="text" class="form-control" id="name" name="name">
+                            </div>
+                            <div class="mb-3">
+                                <label for="volume" class="form-label">Объем</label>
+                                <input type="number" step="0.01" class="form-control" id="volume" name="volume">
+                            </div>
+                            <div class="mb-3">
+                                <label for="expiration_date" class="form-label">Срок годности</label>
+                                <input type="date" class="form-control" id="expiration_date" name="expiration_date">
+                            </div>
+                            <div class="mb-3">
+                                <label for="production_cost" class="form-label">Себестоимость</label>
+                                <input type="number" step="0.01" class="form-control" id="production_cost" name="production_cost">
+                            </div>
+                            <div class="mb-3">
+                                <label for="category" class="form-label">Категория</label>
+                                <input type="text" class="form-control" id="category" name="category">
+                            </div>
+                            <button type="submit" class="btn btn-primary">Сохранить</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript для AJAX -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Обработка открытия модального окна редактирования
+            $('#editProductModal').on('show.bs.modal', function (event) {
+                var button = $(event.relatedTarget); // Кнопка, которая вызвала модальное окно
+                var productId = button.data('product-id'); // Извлечение ID продукта
+                var modal = $(this);
+
+                // Заполнение полей модального окна данными продукта
+                modal.find('.modal-body #name').val(button.data('product-name'));
+                modal.find('.modal-body #volume').val(button.data('product-volume'));
+                modal.find('.modal-body #expiration_date').val(button.data('product-expiration-date'));
+                modal.find('.modal-body #production_cost').val(button.data('product-production-cost'));
+                modal.find('.modal-body #category').val(button.data('product-category'));
+
+                // Установка action формы с правильным URL для обновления
+                modal.find('.edit-product-form').attr('action', '/products/update/' + productId + '/');
+            });
+            // Обработка формы добавления
+            $('#addProductForm').on('submit', function(e) {
+                e.preventDefault();
+                var form = $(this);
+                $.ajax({
+                    type: form.attr('method'),
+                    url: form.attr('action'),
+                    data: form.serialize(),
+                    success: function(response) {
+                        if (response.success) {
+                            location.reload();
+                        } else {
+                            alert('Ошибка при добавлении продукции.');
+                        }
+                    },
+                    error: function() {
+                        alert('Ошибка при отправке формы.');
+                    }
+                });
+            });
+
+            // Обработка формы редактирования
+            $('.edit-product-form').on('submit', function(e) {
+                e.preventDefault();
+                var form = $(this);
+                $.ajax({
+                    type: form.attr('method'),
+                    url: form.attr('action'),
+                    data: form.serialize(),
+                    success: function(response) {
+                        if (response.success) {
+                            location.reload();
+                        } else {
+                            alert('Ошибка при редактировании продукции.');
+                        }
+                    },
+                    error: function() {
+                        alert('Ошибка при отправке формы.');
+                    }
+                });
+            });
+
+            // Обработка формы удаления
+            $('.delete-product-form').on('submit', function(e) {
+                e.preventDefault();
+                var form = $(this);
+                $.ajax({
+                    type: form.attr('method'),
+                    url: form.attr('action'),
+                    data: form.serialize(),
+                    success: function(response) {
+                        if (response.success) {
+                            location.reload();
+                        } else {
+                            alert('Ошибка при удалении продукции.');
+                        }
+                    },
+                    error: function() {
+                        alert('Ошибка при отправке формы.');
+                    }
+                });
+            });
+        });
+    </script>
+{% endblock %}

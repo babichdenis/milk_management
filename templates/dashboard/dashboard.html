@@ -1,0 +1,158 @@
+<!-- templates/dashboard/dashboard.html -->
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">Производственный дашборд</h1>
+    
+    <!-- Row 1: Key Metrics -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-white bg-primary">
+                <div class="card-body">
+                    <h5 class="card-title">Поставщики</h5>
+                    <p class="card-text display-4">{{ suppliers_stats.total }}</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card text-white bg-success">
+                <div class="card-body">
+                    <h5 class="card-title">Сырьё (л)</h5>
+                    <p class="card-text display-4">{{ raw_materials_stats.total_quantity }}</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card text-white bg-warning">
+                <div class="card-body">
+                    <h5 class="card-title">Продукция</h5>
+                    <p class="card-text display-4">{{ products_stats.total }}</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card text-white bg-info">
+                <div class="card-body">
+                    <h5 class="card-title">Активные планы</h5>
+                    <p class="card-text display-4">{{ production_plans.current|length }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Row 2: Detailed Stats -->
+    <div class="row">
+        <!-- Поставщики -->
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    Последние поставщики
+                </div>
+                <ul class="list-group list-group-flush">
+                    {% for supplier in suppliers_stats.latest %}
+                    <li class="list-group-item">{{ supplier.name }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+
+        <!-- Сырьё -->
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    Распределение сырья по поставщикам
+                </div>
+                <div class="card-body">
+                    <canvas id="suppliersChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Продукция -->
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    Распределение по категориям
+                </div>
+                <div class="card-body">
+                    <canvas id="categoriesChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Row 3: Production Plans -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    Ближайшие производственные планы
+                </div>
+                <div class="card-body">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Продукт</th>
+                                <th>Количество</th>
+                                <th>Дата</th>
+                                <th>Статус</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for plan in production_plans.current %}
+                            <tr>
+                                <td>{{ plan.product.name }}</td>
+                                <td>{{ plan.quantity }}</td>
+                                <td>{{ plan.planned_date }}</td>
+                                <td>
+                                    <span class="badge {% if plan.status == 'completed' %}bg-success{% else %}bg-warning{% endif %}">
+                                        {{ plan.get_status_display }}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Suppliers Chart
+    const suppliersCtx = document.getElementById('suppliersChart').getContext('2d');
+    new Chart(suppliersCtx, {
+        type: 'doughnut',
+        data: {
+            labels: [{% for item in raw_materials_stats.by_supplier %}"{{ item.supplier__name }}"{% if not forloop.last %}, {% endif %}{% endfor %}],
+            datasets: [{
+                data: [{% for item in raw_materials_stats.by_supplier %}{{ item.total }}{% if not forloop.last %}, {% endif %}{% endfor %}],
+                backgroundColor: [
+                    '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'
+                ]
+            }]
+        }
+    });
+
+    // Categories Chart
+    const categoriesCtx = document.getElementById('categoriesChart').getContext('2d');
+    new Chart(categoriesCtx, {
+        type: 'bar',
+        data: {
+            labels: [{% for item in products_stats.by_category %}"{{ item.category }}"{% if not forloop.last %}, {% endif %}{% endfor %}],
+            datasets: [{
+                label: 'Количество',
+                data: [{% for item in products_stats.by_category %}{{ item.count }}{% if not forloop.last %}, {% endif %}{% endfor %}],
+                backgroundColor: '#4BC0C0'
+            }]
+        }
+    });
+</script>
+{% endblock %}
